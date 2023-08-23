@@ -1,0 +1,53 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        - API_PORT=${API_PORT}
+    container_name: mern-api
+    env_file:
+      - .env
+    ports:
+      - ${API_PORT}:${API_PORT}
+    volumes:
+      - ./api:/api
+      - /api/node_modules
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+  mongo:
+    image: mongo
+    volumes:
+      - data-volume:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - app-network
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        - WEB_PORT=${WEB_PORT}
+    container_name: mern-web
+    env_file:
+      - .env
+    ports:
+      - ${WEB_PORT}:${WEB_PORT}
+    depends_on:
+      - api
+    volumes:
+      - ./web:/web
+      - /web/node_modules
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  data-volume:
+  node_modules:
+  web-root:
+    driver: local
